@@ -1,0 +1,70 @@
+#Make a toplevel directory for deps & build & src somewhere:
+mkdir OpenMVS
+cd OpenMVS
+
+#Get and install dependencies using vcpkg;
+#choose the desired triplet, like "x64-windows", by setting the VCPKG_DEFAULT_TRIPLET environment variable or by specifying it after each package:
+vcpkg install zlib:x64-windows boost:x64-windows eigen3:x64-windows ceres:x64-windows opencv:x64-windows cgal:x64-windows glew:x64-windows glfw3:x64-windows
+
+#Get VCGLib (Required):
+git clone https://github.com/cdcseacave/VCG.git
+
+#Get and unpack OpenMVS in OpenMVS/src:
+git clone https://github.com/cdcseacave/openMVS.git src
+
+#Make build directory:
+mkdir build
+cd build
+
+#Run CMake, where VCPKG_ROOT environment variable points to the root of vcpkg installation:
+open cmake-gui, add entry: VCPKG_TARGET_TRIPLET, type is string ,value is "x64-windows", add entry: CGAL_DIR£¬ type is path, value is "D:\vcpkg\installed\x64-windows\share\cgal", add entry: VCG_ROOT, type is path, value is "d:\baiduSyn\files\3DReconstruction\srcCodes\openMVS-master\VCG", then click "configure", specify generator as "visual studio 14 2015 win64", check "specify toolchain file for cross-compiling", click "next", specify toolchain file as "D:/vcpkg/scripts/buildsystems/vcpkg.cmake", click "finish", click "configure" until there are no red lines appear, then click "generate", click "open project", visual studio will be launched.
+
+#Open the solution in MSVC and build it
+1. first set compile type as "release", set all projects with option "Multi-threaded DLL (/MD)", compile lib projects first;
+2. compile apps projects, for "reconstructmesh" project, add "D:\vcpkg\installed\x64-windows\lib\mpir.lib" in the link option;.
+3. for "viewer" project, in the link option, add "D:\vcpkg\installed\x64-windows\lib\glfw3dll.lib" and replace "D:\vcpkg\installed\x64-windows\lib\glew32.lib;" with "C:\Program Files (x86)\NVIDIA Corporation\Nsight Visual Studio Edition 5.6\Monitor\glew\lib\Release\x64\glew32s.lib".
+
+Here are some basic tips for compiling anything on Windows (and any platform for that matter):
+1. make sure you do not mix dynamic and static linking
+2. make sure you do not mix MT and MD with Windows internal libs
+
+Below work for building project statically.
+
+#Make a toplevel directory for deps & build & src somewhere:
+mkdir OpenMVS
+cd OpenMVS
+
+#Get and install dependencies using vcpkg;
+#choose the desired triplet, like "x64-windows", by setting the VCPKG_DEFAULT_TRIPLET environment variable or by specifying it after each package:
+vcpkg install zlib:x64-windows boost:x64-windows eigen3:x64-windows ceres:x64-windows opencv:x64-windows glew:x64-windows glfw3:x64-windows
+
+# download cgal and build it as static library, remember set CMAKE_TOOLCHAIN_FILE when using cmake and change the output name as "libCGAL-vc140-mt-s-4.12-I-900.lib"
+
+#Get VCGLib (Required):
+git clone https://github.com/cdcseacave/VCG.git
+
+#Get and unpack OpenMVS in OpenMVS/src:
+git clone https://github.com/cdcseacave/openMVS.git src
+
+#Make build directory:
+mkdir build
+cd build
+
+# change the name "d:\vcpkg\installed\x64-windows\include\CGAL\" as "d:\vcpkg\installed\x64-windows\include\CGAL1\". (remember changing back when all are done.)
+
+#Run CMake, where VCPKG_ROOT environment variable points to the root of vcpkg installation:
+cmake . ..\src -G "Visual Studio 14 2015 Win64" -DCGAL_DIR="d:\cgal\build" -DCGAL_ROOT="d:\cgal\build" -DCMAKE_TOOLCHAIN_FILE=d:\vcpkg\scripts\buildsystems\vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows -DVCG_ROOT="d:\baiduSyn\files\3DReconstruction\srcCodes\openMVS-master\VCG"
+
+#Open the solution in MSVC and build it
+1. first compile lib project with option "Multi-threaded (/MT)";
+2. in apps projects, add "D:\cgal\build\lib\libCGAL-vc140-mt-s-4.12-I-900.lib" in link option.
+3. for "viewer" project, in the link option, add "D:\vcpkg\installed\x64-windows\lib\glfw3dll.lib" and replace "D:\vcpkg\installed\x64-windows\lib\glew32.lib;" with "C:\Program Files (x86)\NVIDIA Corporation\Nsight Visual Studio Edition 5.6\Monitor\glew\lib\Release\x64\glew32s.lib".
+# 4. for refinemesh project, add "D:\vcpkg\installed\x64-windows-static\lib\glog.lib" in link option.
+# 5. for refinemesh project, add "D:\vcpkg\installed\x64-windows-static\lib\gflags_static.lib" in link option.
+# 1. first compile lib project with option "Multi-threaded (Debug) DLL";
+# 2. for "reconstructMesh" project, add "D:\vcpkg\installed\x64-windows\lib\mpir.lib" in the link option;
+
+
+Here are some basic tips for compiling anything on Windows (and any platform for that matter):
+1. make sure you do not mix dynamic and static linking
+2. make sure you do not mix MT and MD with Windows internal libs
